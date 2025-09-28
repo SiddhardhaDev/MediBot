@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Medicine Dispenser Robot — Overview & Build</title>
+  <style>
+    :root{--accent:#276ef1;--muted:#6b7280;--card:#ffffff;--bg:#f3f4f6}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:0;background:var(--bg);color:#111}
+    header{background:linear-gradient(90deg,#fff,#eef4ff);padding:28px 24px;border-bottom:1px solid #e6eefc}
+    .container{max-width:1100px;margin:24px auto;padding:0 20px}
+    h1{margin:0;font-size:28px;color:#0b1220}
+    .lead{color:var(--muted);margin-top:6px}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:20px;margin-top:20px}
+    .card{background:var(--card);border-radius:12px;box-shadow:0 6px 18px rgba(8,30,63,0.06);padding:18px}
+    .image-wrap{display:flex;align-items:center;justify-content:center;padding:16px}
+    img.robot{max-width:100%;height:auto;border-radius:10px;border:1px solid #e9eef8;background:#fff}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #f1f5f9}
+    th{color:#0b1220;font-weight:600}
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;background:#eef6ff;color:var(--accent);padding:6px 10px;border-radius:999px;font-weight:600;margin-right:8px}
+    ol{padding-left:18px}
+    .timecard{display:flex;gap:12px;align-items:center}
+    .big{font-size:20px;font-weight:700}
+    footer{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+    .parts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    pre{background:#0b122033;padding:12px;border-radius:8px;overflow:auto}
+    @media (max-width:880px){.grid{grid-template-columns:1fr} .image-wrap{padding:6px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Medicine Dispenser Robot — Compact Pi 3 A+ Design</h1>
+      <div class="lead">A compact, practical robot that recognizes labelled medicines, extends an arm to pick them, and delivers them on schedule. Single‑board computer (Raspberry Pi 3 A+), Pi Camera, wheeled base and an articulated arm.</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <section class="card">
+        <h2>Overview</h2>
+        <p class="muted">This design targets a finished, product-like look while keeping component costs low. The robot stores a small medicine database, uses on-device image processing (Tesseract / Pyzbar / EasyOCR) on the Pi to read labels or QR stickers, and runs a scheduled dispense routine using a DS3231 RTC or the Pi's clock. The arm uses hobby servos for pick/reach and small DC motors for mobility.</p>
+
+        <h3 style="margin-top:12px">Use cases</h3>
+        <ul>
+          <li>Home medication reminders and automated retrieval at scheduled times.</li>
+          <li>Assisted living: bring prescribed bottles to a fixed drop point.</li>
+          <li>Prototype for pharmacy‑automation demos.</li>
+        </ul>
+
+        <h3 style="margin-top:12px">Mechanism of functioning</h3>
+        <ol>
+          <li>Pi Camera scans shelf/label when the robot is at the storage position or when user requests a scan.</li>
+          <li>Pi runs a small image pipeline: preprocess → QR/Barcode decode or OCR → lookup ID in local DB (JSON/SQLite).</li>
+          <li>On a schedule match, motion controller executes: rotate base toward slot (differential drive), position arm using taught joint angles, close gripper, retract and move to drop point, release.</li>
+          <li>Events are logged to local storage (microSD) and optional Wi‑Fi notification (Telegram/HTTP webhook).</li>
+        </ol>
+
+        <h3 style="margin-top:12px">Key software components</h3>
+        <div class="parts-grid">
+          <div>
+            <strong>On‑device</strong>
+            <ul class="muted">
+              <li>Python 3 + OpenCV for capture & preprocessing</li>
+              <li>pyzbar or zxing for QR/barcode detection</li>
+              <li>Tesseract or EasyOCR for printed labels (optional)</li>
+              <li>RPi.GPIO / pigpio or gpiozero for motor & servo control</li>
+              <li>SQLite or JSON for local medicine DB</li>
+            </ul>
+          </div>
+          <div>
+            <strong>Optional cloud/phone</strong>
+            <ul class="muted">
+              <li>Flask server / ngrok for remote decode (if needed)</li>
+              <li>Telegram bot or local web UI for manual control</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3 style="margin-top:12px">Safety & constraints</h3>
+        <p class="muted">Keep carried weight small (under 200 g recommended). Use proper power protection (BMS, fuses) and avoid contact between the gripper and medication surfaces when hygiene is required — use small smart cups or liners.</p>
+
+      </section>
+
+      <aside class="card">
+        <div class="image-wrap">
+          <!-- Image is referenced from the generated asset saved on the system -->
+          <img class="robot" src="sandbox:/mnt/data/A_photograph_features_a_robot_designed_for_dispens.png" alt="Medicine dispenser robot mockup" />
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="pill">Estimated cost</div>
+          <div class="timecard"><div class="big">≈ ₹4,800</div><div class="muted">(parts, approximate)</div></div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="card" style="margin-top:18px">
+      <h2>All parts & approximate prices (INR)</h2>
+      <table>
+        <thead><tr><th>Part</th><th>Qty</th><th>Unit (₹)</th><th>Subtotal (₹)</th></tr></thead>
+        <tbody>
+          <tr><td>Raspberry Pi 3 Model A+</td><td>1</td><td>3,200</td><td>3,200</td></tr>
+          <tr><td>Pi Camera Module (V2 or compatible)</td><td>1</td><td>700</td><td>700</td></tr>
+          <tr><td>18650 2500 mAh cells</td><td>6 (2S3P)</td><td>49</td><td>294</td></tr>
+          <tr><td>2S BMS (10–20A) + balance harness</td><td>1</td><td>350</td><td>350</td></tr>
+          <tr><td>High-current DC-DC buck (5 V @ 6–8 A)</td><td>1</td><td>600</td><td>600</td></tr>
+          <tr><td>DC Motors (4) — small wheel motors</td><td>4</td><td>150</td><td>600</td></tr>
+          <tr><td>Motor drivers (TB6612FNG) or L293D x2</td><td>2</td><td>200</td><td>400</td></tr>
+          <tr><td>Servos (gripper + arm joints) — hobby</td><td>4</td><td>150</td><td>600</td></tr>
+          <tr><td>MDF sheet (chassis parts) + hardware</td><td>1 lot</td><td>400</td><td>400</td></tr>
+          <tr><td>Misc: jumper wires, screws, headers, SD card</td><td>lot</td><td>150</td><td>150</td></tr>
+        </tbody>
+        <tfoot>
+          <tr><th colspan="3">Total (approx)</th><th>₹6,294</th></tr>
+        </tfoot>
+      </table>
+      <p class="muted">Notes: Prices are approximate retail in India and can vary. The earlier cost estimate in conversation was conservative; this table includes a slightly more robust buck, BMS and spare margin. If you prefer to use L293D and a smaller buck you can bring the budget down toward ₹4.8k.</p>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <h2>Build time & step-by-step procedure</h2>
+      <p class="muted">Estimated hands-on time: <strong>4–8 hours</strong> (spread across cutting/printing, wiring, software, testing). If you are doing your first battery pack and wiring, allow extra time for safety checks.</p>
+
+      <h3>Step 0 — Safety & prep (30–45 minutes)</h3>
+      <ol>
+        <li>Verify you have all parts and safety gear (multimeter, small screwdriver set, heatshrink, soldering iron if needed).</li>
+        <li>Prepare a non‑flammable workspace for battery assembly and charging. Read BMS and charger instructions.</li>
+      </ol>
+
+      <h3>Step 1 — Mechanical base & arm (1.5–2 hrs)</h3>
+      <ol>
+        <li>Cut the MDF chassis plates (base, uprights) using a template. Drill mounting holes for motors and Pi. Sand edges for a finished look.</li>
+        <li>Assemble wheel motors to base, mount caster if needed. Attach vertical stand for medicine shelf.</li>
+        <li>3‑link arm: mount servos into printed/laser‑cut brackets, use bolts as hinge pins. Attach a two-finger gripper to the last servo.</li>
+      </ol>
+
+      <h3>Step 2 — Electronics & power (1–2 hrs)</h3>
+      <ol>
+        <li>Assemble 2S3P pack and securely solder or spot‑weld nickel tabs, connect to 2S BMS. If unsure, buy a prebuilt 2S pack or get help.</li>
+        <li>Wire pack -> buck converter. Adjust the buck to exactly 5.00 V with a multimeter before connecting the Pi.</li>
+        <li>Wire motor driver Vcc to the buck (or separate buck for motors), connect motor outputs to wheels. Add a 2200–4700 µF electrolytic across the motor 5 V rail.</li>
+        <li>Mount Pi safely, insert microSD with OS. Mount camera on the forward mast and connect ribbon cable.
+      </ol>
+
+      <h3>Step 3 — Software (1–2 hrs)</h3>
+      <ol>
+        <li>Flash Raspberry Pi OS (Lite or Desktop) and install Python packages: opencv-python, pyzbar, pytesseract (if using OCR), gpiozero or pigpio.</li>
+        <li>Clone the repo or copy scripts: camera capture → decode → lookup → motion routine. Add a small Flask web UI for manual control and teaching poses if desired.</li>
+        <li>Write a small "teach" tool: jog servos via web UI, save pose CSV line (id,name,time,angles) to local DB (CSV/JSON/SQLite).</li>
+      </ol>
+
+      <h3>Step 4 — Calibration & testing (45–90 mins)</h3>
+      <ol>
+        <li>With robot powered but motors stopped, jog servos and save 3–5 demo poses for common medicine slots.</li>
+        <li>Test camera decode at expected sticker sizes and distances. Tune lighting and contrast if needed.</li>
+        <li>Run the full dispense routine once per med to verify grip strength and travel path. Adjust servo angles if the bottle slips.</li>
+        <li>Test scheduled run and logging. Add retry logic for failed grabs.</li>
+      </ol>
+
+      <h3>Maintenance & upgrades</h3>
+      <ul>
+        <li>Replace SG90 servos with metal‑geared higher torque types if you carry heavier bottles.</li>
+        <li>Swap L293D for TB6612/MOSFET driver to reduce heat and increase motor voltage to the wheels.</li>
+        <li>Add small UV/cleaning cup or disposable liners to avoid direct contact with medicine surfaces.</li>
+      </ul>
+
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <h2>Downloads & next actions</h2>
+      <p class="muted">If you want, I can now:</p>
+      <ul>
+        <li>Provide the full Raspberry Pi Python code (camera + decode + servo & motor control + web UI).</li>
+        <li>Produce a printable MDF cutting template (SVG/PDF) and 3D STL for the arm joints and gripper.</li>
+        <li>Generate the wiring diagram showing BMS → buck → Pi → motor driver → motors and common grounds.</li>
+      </ul>
+    </section>
+
+    <footer class="card" style="margin-top:18px">Made for you — modify parts/prices to match local availability. Ask for code, wiring diagram, or printable parts and I’ll add them next.</footer>
+  </main>
+</body>
+</html>
